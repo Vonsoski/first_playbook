@@ -1,0 +1,34 @@
+---
+- hosts: lightsail
+  remote_user: ubuntu
+  become: yes
+  become_method: sudo
+
+  vars:
+    ansible_ssh_private_key_file: "/home/vonsoski/Documentos/key_pairs/key-lightsail.pem"
+    ansible_ssh_extra_args: "-o StrictHostKeyChecking=no"
+
+  tasks:
+  - name: Criar user Dev
+    user:
+      name: usrdev
+      shell: /bin/bash
+
+  - name: Set authorized key taken from file
+    authorized_key:
+      user: usrdev
+      state: present
+      key: "{{ lookup('file', './files/usrdev.pub') }}"
+
+  - name: Instalar AWS CLI
+    apt:
+      name: awscli
+      state: present
+
+  - name: Configurar credenciais AWS CLI
+    script: files/configurar_usrdev.sh
+
+
+    # - name: Autenticar AWS ERC
+    #   command: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 430080016703.dkr.ecr.us-east-1.amazonaws.com
+      
